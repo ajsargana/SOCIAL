@@ -1,7 +1,6 @@
 {
   "projectId": "0088edf4-b1d4-4347-bf65-311f7ff92ef2",
-  "createdAt": 1771744459577,
-  "version": "1.0",
+  "createdAt": 1771745104125,
   "startupCommands": ["bun install; npm run dev"],
   "templateId": "any"
 }
