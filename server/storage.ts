@@ -26,6 +26,8 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
+  incrementPostUsage(id: string): Promise<void>;
 
   getSocialAccountsByUserId(userId: string): Promise<SocialAccount[]>;
   getSocialAccount(id: string): Promise<SocialAccount | undefined>;
