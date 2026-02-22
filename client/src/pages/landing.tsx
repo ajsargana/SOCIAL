@@ -495,9 +495,9 @@ export default function LandingPage() {
                       Priority support
                     </li>
                   </ul>
-                  <button className="w-full btn-gradient text-sm font-semibold text-slate-900 rounded-full px-4 py-2 shadow-lg hover-elevate active-elevate-2 transition-all" data-testid="button-start-pro-trial">
-                    Start 14-day free trial
-                  </button>
+                  <button onClick={() => navigate("/login")} className="w-full btn-gradient text-sm font-semibold text-slate-900 rounded-full px-4 py-2 shadow-lg hover-elevate active-elevate-2 transition-all" data-testid="button-start-pro-trial">
+                      Start 14-day free trial
+                    </button>
                 </div>
               </div>
 
