@@ -129,11 +129,11 @@ export default function LandingPage() {
                 </ul>
 
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-                  <div className="flex flex-wrap gap-2 items-stretch">
-                    <a href="#demo" className="btn-gradient text-sm font-semibold text-slate-900 rounded-full px-5 py-2.5 shadow-lg flex items-center gap-2 hover-elevate active-elevate-2 transition-all" data-testid="button-connect-socials">
-                      <span>Connect your socials</span>
-                      <span className="text-xs bg-black/10 rounded-full px-2 py-0.5">Free 14-day trial</span>
-                    </a>
+                    <div className="flex flex-wrap gap-2 items-stretch">
+                      <button onClick={() => navigate("/login")} className="btn-gradient text-sm font-semibold text-slate-900 rounded-full px-5 py-2.5 shadow-lg flex items-center gap-2 hover-elevate active-elevate-2 transition-all" data-testid="button-connect-socials">
+                        <span>Connect your socials</span>
+                        <span className="text-xs bg-black/10 rounded-full px-2 py-0.5">Free 14-day trial</span>
+                      </button>
                     <button className="px-4 py-2.5 rounded-full border border-slate-600/80 text-sm font-medium text-slate-200 hover:bg-slate-900/80 hover-elevate active-elevate-2 transition" data-testid="button-watch-demo">
                       Watch 2-min demo
                     </button>
