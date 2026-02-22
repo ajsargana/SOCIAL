@@ -82,11 +82,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async incrementPostUsage(id: string): Promise<void> {
-    await db
-      .update(users)
-      .set({ postsUsedThisMonth: db.$count(users, eq(users.id, id)) })
-      .where(eq(users.id, id));
-    // Simple increment via raw SQL via drizzle
     const user = await this.getUser(id);
     if (user) {
       await db
