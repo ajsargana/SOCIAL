@@ -1,4 +1,4 @@
-.env
+# .env # Removed by Orchids to allow .env files
 node_modules
 dist
 .DS_Store
