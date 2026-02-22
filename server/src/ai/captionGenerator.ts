@@ -1,10 +1,11 @@
+import { llmClient } from "./llmClient";
+
 export interface CaptionOptions {
   topic: string;
   platform: string;
   brandVoice?: string;
   maxLength?: number;
   includeHashtags?: boolean;
-  includeEmoji?: boolean;
 }
 
 export interface GeneratedCaption {
@@ -13,109 +14,65 @@ export interface GeneratedCaption {
   reasoning: string;
 }
 
+const PLATFORM_LIMITS: Record<string, number> = {
+  twitter: 280,
+  x: 280,
+  instagram: 2200,
+  linkedin: 3000,
+  tiktok: 2200,
+};
+
+const PLATFORM_HASHTAGS: Record<string, string[]> = {
+  instagram: ["#content", "#creator", "#fyp", "#trending"],
+  twitter: [],
+  x: [],
+  linkedin: ["#business", "#insights", "#leadership"],
+  tiktok: ["#fyp", "#viral", "#learnontiktok"],
+};
+
 class CaptionGenerator {
-  private platformTemplates: Record<string, string[]> = {
-    instagram: [
-      "Just dropped: {topic}! Link in bio for more.",
-      "Behind the scenes: {topic}. Double tap if you're loving this!",
-      "New content alert: {topic}. Save this for later!",
-      "{topic} - because you asked for it. Share your thoughts below!",
-    ],
-    twitter: [
-      "{topic} - a thread:",
-      "Hot take: {topic}. Agree or disagree?",
-      "Just learned something interesting about {topic}...",
-      "{topic}. That's it. That's the tweet.",
-    ],
-    x: [
-      "{topic} - a thread:",
-      "Hot take: {topic}. Agree or disagree?",
-      "Just learned something interesting about {topic}...",
-      "{topic}. That's it. That's the post.",
-    ],
-    linkedin: [
-      "Excited to share my thoughts on {topic}. Here's what I've learned:",
-      "3 key insights about {topic} that changed my perspective:",
-      "{topic} is transforming the way we work. Here's why:",
-      "A deep dive into {topic} - lessons from the field:",
-    ],
-    tiktok: [
-      "POV: You're learning about {topic}",
-      "Things nobody tells you about {topic}",
-      "The truth about {topic} (nobody's talking about this)",
-      "When you finally understand {topic}...",
-    ],
-  };
-
-  private hashtagsByPlatform: Record<string, string[]> = {
-    instagram: ["#content", "#creator", "#fyp", "#viral", "#trending"],
-    twitter: [],
-    x: [],
-    linkedin: ["#business", "#insights", "#leadership", "#growth"],
-    tiktok: ["#fyp", "#viral", "#trending", "#learnontiktok"],
-  };
-
   async generate(options: CaptionOptions): Promise<string> {
-    const { topic, platform, brandVoice, maxLength = 280, includeHashtags = true } = options;
-
-    const templates = this.platformTemplates[platform.toLowerCase()] || this.platformTemplates.instagram;
-    const template = templates[Math.floor(Math.random() * templates.length)];
-
-    let caption = template.replace("{topic}", topic);
-
-    if (brandVoice) {
-      caption = this.applyBrandVoice(caption, brandVoice);
-    }
-
-    if (includeHashtags) {
-      const hashtags = this.getHashtags(platform.toLowerCase(), topic);
-      if (hashtags.length > 0) {
-        caption += "\n\n" + hashtags.join(" ");
-      }
-    }
-
-    if (caption.length > maxLength) {
-      caption = caption.substring(0, maxLength - 3) + "...";
-    }
-
-    return caption;
+    const result = await this.generateWithExplanation(options);
+    return result.caption;
   }
 
   async generateWithExplanation(options: CaptionOptions): Promise<GeneratedCaption> {
-    const caption = await this.generate(options);
-    const hashtags = this.getHashtags(options.platform.toLowerCase(), options.topic);
+    const { topic, platform, brandVoice, maxLength, includeHashtags = true } = options;
+    const limit = maxLength || PLATFORM_LIMITS[platform.toLowerCase()] || 500;
+
+    const systemPrompt = `You are an expert social media copywriter. Write platform-optimised captions that feel authentic, drive engagement, and match the brand voice. ${brandVoice ? `Brand voice: ${brandVoice}.` : ""} Never include explanations — respond with only the caption text.`;
+
+    const prompt = `Write a ${platform} caption about: "${topic}".
+Platform: ${platform}
+Max length: ${limit} characters
+${brandVoice ? `Brand voice / tone: ${brandVoice}` : "Tone: authentic, conversational"}
+${includeHashtags && PLATFORM_HASHTAGS[platform.toLowerCase()]?.length ? `Include relevant hashtags.` : ""}
+
+Respond with only the caption. No preamble.`;
+
+    const response = await llmClient.complete({
+      prompt,
+      systemPrompt,
+      maxTokens: 350,
+      temperature: 0.85,
+    });
+
+    let caption = response.text.trim();
+
+    // Enforce character limit
+    if (caption.length > limit) {
+      caption = caption.substring(0, limit - 3) + "...";
+    }
+
+    // Extract hashtags from the caption
+    const hashtagRegex = /#\w+/g;
+    const hashtags = caption.match(hashtagRegex) || [];
 
     return {
       caption,
       hashtags,
-      reasoning: `Generated ${options.platform} caption for topic "${options.topic}" using brand voice: ${options.brandVoice || "default"}. Optimized for engagement based on platform best practices.`,
+      reasoning: `Generated ${platform} caption for "${topic}" using ${brandVoice ? `"${brandVoice}" brand voice` : "default voice"}. Optimised for engagement and platform best practices.`,
     };
-  }
-
-  private applyBrandVoice(caption: string, brandVoice: string): string {
-    const voiceModifiers: Record<string, (text: string) => string> = {
-      professional: (text) => text.replace(/!/g, "."),
-      casual: (text) => text.toLowerCase().replace(/\./g, "!"),
-      enthusiastic: (text) => text + " Let's go!",
-      minimal: (text) => text.split(".")[0],
-    };
-
-    const modifier = voiceModifiers[brandVoice.toLowerCase()];
-    return modifier ? modifier(caption) : caption;
-  }
-
-  private getHashtags(platform: string, topic: string): string[] {
-    const baseHashtags = this.hashtagsByPlatform[platform] || [];
-    const topicHashtag = "#" + topic.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
-
-    return [topicHashtag, ...baseHashtags.slice(0, 4)];
-  }
-
-  // TODO: Integrate with actual LLM for better generation
-  async generateWithLLM(_options: CaptionOptions): Promise<string> {
-    // Placeholder for LLM integration
-    // This would call OpenAI/Anthropic API
-    throw new Error("LLM integration not yet implemented");
   }
 }
 
