@@ -44,7 +44,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const limits = PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS];
       const existing = await storage.getSocialAccountsByUserId(user.id);
-      if (existing.length >= limits.maxSocialAccounts) {
+      if (limits.maxSocialAccounts !== Infinity && existing.length >= limits.maxSocialAccounts) {
         return res.status(403).json({
           error: `Your ${user.plan} plan supports up to ${limits.maxSocialAccounts} social accounts. Upgrade to add more.`,
         });
@@ -55,7 +55,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         userId: user.id,
       });
       return res.status(201).json(account);
-    } catch {
+    } catch (err) {
+      console.error("[POST /api/social-accounts]", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   });
