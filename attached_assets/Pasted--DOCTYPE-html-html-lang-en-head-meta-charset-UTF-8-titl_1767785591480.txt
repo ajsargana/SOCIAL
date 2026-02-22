@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FlowPulse – Autonomous Social Posting for Influencers & Brands</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    html, body {
+      scroll-behavior: smooth;
+      background: radial-gradient(circle at top left, #1f2937 0, #020617 55%);
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+    }
+    .glass {
+      background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.6));
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(148,163,184,0.18);
+    }
+    .btn-gradient {
+      background-image: linear-gradient(135deg, #22c55e, #3b82f6);
+    }
+    .btn-gradient:hover {
+      filter: brightness(1.03);
+      transform: translateY(-1px);
+      box-shadow: 0 18px 45px rgba(34,197,94,0.4);
+    }
+    .badge-pill {
+      background: radial-gradient(circle at 0 0, rgba(34,197,94,0.45), rgba(56,189,248,0.25));
+    }
+    .hero-glow {
+      position: absolute;
+      inset: auto;
+      width: 880px;
+      height: 880px;
+      background: radial-gradient(circle, rgba(56,189,248,0.18) 0, transparent 60%);
+      opacity: 0.7;
+      filter: blur(10px);
+      pointer-events: none;
+      z-index: -1;
+    }
+    .card-hover {
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(15,23,42,0.8);
+      border-color: rgba(96,165,250,0.55);
+      background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.7));
+    }
+    .gradient-border {
+      position: relative;
+      border-radius: 1.25rem;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(34,197,94,0.6), rgba(59,130,246,0.5), rgba(244,63,94,0.4));
+    }
+    .gradient-border-inner {
+      border-radius: inherit;
+      background: radial-gradient(circle at top left, rgba(15,23,42,0.95), rgba(15,23,42,0.85));
+    }
+    .pill {
+      border-radius: 999px;
+    }
+    .nav-blur {
+      backdrop-filter: blur(16px);
+      background: linear-gradient(to right, rgba(15,23,42,0.92), rgba(15,23,42,0.93));
+      border-bottom: 1px solid rgba(148,163,184,0.22);
+    }
+    .chip {
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.38);
+    }
+    .timeline-line {
+      background: linear-gradient(to bottom, rgba(56,189,248,0.8), rgba(34,197,94,0.8));
+    }
+    .shadow-soft {
+      box-shadow: 0 18px 55px rgba(15,23,42,0.9);
+    }
+    .input-base {
+      background: rgba(15,23,42,0.85);
+      border: 1px solid rgba(51,65,85,0.9);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .input-base:focus {
+      border-color: rgba(59,130,246,0.85);
+      box-shadow: 0 0 0 1px rgba(59,130,246,0.6);
+      outline: none;
+      background: rgba(15,23,42,0.95);
+    }
+    .toggle {
+      transition: background 0.25s ease;
+    }
+    .toggle-knob {
+      transition: transform 0.25s ease, background 0.25s ease;
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      height: 4px;
+      width: 4px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(148,163,184,0.4);
+      border-radius: 999px;
+    }
+    @media (max-width: 640px) {
+      .hero-glow {
+        width: 600px;
+        height: 600px;
+      }
+    }
+  </style>
+</head>
+<body class="text-slate-100">
+  <!-- Navigation -->
+  <header class="fixed top-0 inset-x-0 z-40 nav-blur">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-400 via-sky-500 to-purple-500 flex items-center justify-center shadow-lg shadow-emerald-500/40">
+            <span class="font-bold text-sm tracking-tight">FP</span>
+          </div>
+          <span class="font-semibold text-slate-100 tracking-tight text-lg">FlowPulse</span>
+        </div>
+        <nav class="hidden md:flex items-center gap-8 text-sm">
+          <a href="#how-it-works" class="text-slate-300 hover:text-white transition">How it works</a>
+          <a href="#features" class="text-slate-300 hover:text-white transition">Features</a>
+          <a href="#pricing" class="text-slate-300 hover:text-white transition">Pricing</a>
+          <a href="#demo" class="text-slate-300 hover:text-white transition">Live demo</a>
+        </nav>
+        <div class="flex items-center gap-3">
+          <button class="hidden sm:inline-flex px-3.5 py-1.5 rounded-full border border-slate-600/80 text-xs font-medium text-slate-200 hover:bg-slate-800/80 transition">
+            Log in
+          </button>
+          <a href="#demo" class="btn-gradient text-xs sm:text-sm font-semibold text-slate-900 rounded-full px-4 py-2 shadow-lg flex items-center gap-1.5">
+            <span>Start free</span>
+            <span class="text-xs bg-black/10 rounded-full px-1.5 py-0.5">60s setup</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <main class="pt-24 pb-20">
+    <section class="relative overflow-hidden">
+      <div class="hero-glow -top-40 -right-52"></div>
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-10 items-center">
+          <!-- Left: copy -->
+          <div>
+            <div class="inline-flex items-center gap-2 badge-pill rounded-full px-2.5 py-1 text-xs text-emerald-100 border border-emerald-300/40 shadow-soft shadow-emerald-500/20 mb-5">
+              <span class="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-300"></span>
+              Fully autonomous content gaps filled in real time
+            </div>
+
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-slate-50 mb-4">
+              Never go dark on social again.
+            </h1>
+            <p class="text-slate-300 max-w-xl text-sm sm:text-base mb-6">
+              FlowPulse watches your posting cadence and fills every gap automatically – generating on-brand images, captions, and posting across all your connected social accounts, without you lifting a finger.
+            </p>
+
+            <ul class="flex flex-wrap gap-2 text-xs text-slate-300 mb-7">
+              <li class="chip pill px-2.5 py-1 flex items-center gap-1.5">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> AI topics & visuals
+              </li>
+              <li class="chip pill px-2.5 py-1 flex items-center gap-1.5">
+                <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span> All socials linked
+              </li>
+              <li class="chip pill px-2.5 py-1 flex items-center gap-1.5">
+                <span class="h-1.5 w-1.5 rounded-full bg-fuchsia-400"></span> Auto gap detection
+              </li>
+              <li class="chip pill px-2.5 py-1 flex items-center gap-1.5">
+                <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span> Decision engine
+              </li>
+            </ul>
+
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+              <div class="flex gap-2 items-stretch">
+                <button id="cta-start" class="btn-gradient text-sm font-semibold text-slate-900 rounded-full px-5 py-2.5 shadow-lg flex items-center gap-2">
+                  <span>Connect your socials</span>
+                  <span class="text-xs bg-black/10 rounded-full px-2 py-0.5">Free 14‑day trial</span>
+                </button>
+                <button id="cta-demo" class="px-4 py-2.5 rounded-full border border-slate-600/80 text-sm font-medium text-slate-200 hover:bg-slate-900/80 transition">
+                  Watch 2‑min demo
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 text-[11px] text-slate-400">
+              <div class="flex -space-x-2">
+                <div class="w-7 h-7 rounded-full border border-slate-900 bg-gradient-to-tr from-pink-500 to-rose-400"></div>
+                <div class="w-7 h-7 rounded-full border border-slate-900 bg-gradient-to-tr from-sky-500 to-cyan-400"></div>
+                <div class="w-7 h-7 rounded-full border border-slate-900 bg-gradient-to-tr from-amber-400 to-orange-500"></div>
+              </div>
+              <span>Trusted by solo creators & enterprise teams posting 10K+ times a month.</span>
+            </div>
+          </div>
+
+          <!-- Right: Live simulation card -->
+          <div class="gradient-border shadow-soft">
+            <div class="gradient-border-inner p-4 sm:p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
+                  <span class="text-xs uppercase tracking-[0.16em] text-slate-400">Live autopilot</span>
+                </div>
+                <span id="sim-status" class="pill px-2 py-0.5 text-[10px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-400/40 flex items-center gap-1">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                  Engaged
+                </span>
+              </div>
+
+              <div class="glass rounded-2xl border border-slate-700/60 p-3 sm:p-4 card-hover">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <p class="text-xs text-slate-400">Creator profile</p>
+                    <p class="text-sm font-semibold text-slate-50">You • @yourhandle</p>
+                  </div>
+                  <div class="flex flex-col items-end gap-1">
+                    <div class="flex items-center gap-2 text-[10px] text-slate-400">
+                      <span>Posting gap</span>
+                      <span class="pill px-2 py-0.5 bg-slate-900/70 border border-slate-700/80">6 hours</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-[10px] text-slate-400">
+                      <span>Autopilot</span>
+                      <div class="w-8 h-4 pill bg-emerald-500/40 toggle flex items-center px-0.5">
+                        <div class="w-3 h-3 rounded-full bg-slate-900 toggle-knob translate-x-3"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="relative rounded-xl border border-slate-700/80 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-3 overflow-hidden mb-3">
+                  <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.35),transparent_55%)] opacity-70 pointer-events-none"></div>
+                  <div class="relative z-10 flex items-center justify-between mb-2 text-[11px] text-slate-300">
+                    <div class="flex items-center gap-1.5">
+                      <span class="inline-flex h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                      <span>AI topic engine</span>
+                    </div>
+                    <span id="sim-step" class="pill px-2 py-0.5 bg-black/30 border border-slate-700 text-[10px] text-slate-300">
+                      Detecting content gap…
+                    </span>
+                  </div>
+                  <p id="sim-topic" class="relative z-10 text-sm font-medium text-slate-50">
+                    Scanning your content calendar…
+                  </p>
+                  <p id="sim-caption" class="relative z-10 mt-2 text-xs text-slate-300">
+                    FlowPulse analyzes your posting history, audience behavior, and topics to decide what to publish next.
+                  </p>
+                  <div class="relative z-10 mt-3 flex items-center justify-between text-[10px] text-slate-400">
+                    <div class="flex items-center gap-2">
+                      <span class="pill px-2 py-0.5 bg-black/30 border border-slate-700/80 flex items-center gap-1">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                        Decision: Wait
+                      </span>
+                      <span>Best window in 18 min</span>
+                    </div>
+                    <span class="pill px-2 py-0.5 bg-black/30 border border-slate-700/80">Engagement ↑ 23%</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-2 text-[11px] text-slate-300">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="pill px-1.5 py-0.5 bg-slate-900/70 border border-slate-700/80 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                        IG
+                      </span>
+                      <span class="pill px-1.5 py-0.5 bg-slate-900/70 border border-slate-700/80 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                        X
+                      </span>
+                      <span class="pill px-1.5 py-0.5 bg-slate-900/70 border border-slate-700/80 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-pink-400"></span>
+                        TikTok
+                      </span>
+                      <span class="pill px-1.5 py-0.5 bg-slate-900/70 border border-slate-700/80 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+                        LinkedIn
+                      </span>
+                    </div>
+                    <span class="text-slate-400">Synced</span>
+                  </div>
+                  <div class="flex items-center justify-between text-slate-400">
+                    <span>Next post ETA</span>
+                    <span id="sim-eta" class="pill px-2 py-0.5 bg-slate-900/70 border border-slate-700/80 text-[10px]">
+                      Calculating best send time…
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] text-slate-500 mt-2">
+                <span>By enabling Autopilot, you grant FlowPulse permission to generate and schedule posts across your connected profiles.</span>
+                <span class="hidden sm:block text-slate-400">No credit card required</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how-it-works" class="mt-16 sm:mt-24">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div>
+            <p class="text-xs font-semibold tracking-[0.2em] uppercase text-emerald-300 mb-1.5">How it works</p>
+            <h2 class="text-xl sm:text-2xl font-semibold text-slate-50">Always‑on posting, with guardrails you control.</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 max-w-md">
+            FlowPulse observes your publishing rhythm, predicts when you’re about to miss a beat, and then generates and ships content that feels like you – not a bot.
+          </p>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-5">
+          <div class="glass rounded-2xl border border-slate-700/80 p-4 card-hover">
+            <div class="flex items-center justify-between mb-3">
+              <span class="pill px-2 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-400/40">Step 1</span>
+              <span class="text-[11px] text-slate-400">Connect & learn</span>
+            </div>
+            <h3 class="text-sm font-semibold mb-2 text-slate-50">Link all your social accounts</h3>
+            <p class="text-xs text-slate-300 mb-3">
+              Connect Instagram, TikTok, X, LinkedIn, YouTube and more in seconds. FlowPulse ingests your last 12 months of posts, engagement curves, and brand voice.
+            </p>
+            <ul class="space-y-1 text-xs text-slate-300">
+              <li>• Understands your posting frequency & gaps</li>
+              <li>• Clones your tone, style, and visual identity</li>
+              <li>• Maps audience peaks by timezone</li>
+            </ul>
+          </div>
+
+          <div class="glass rounded-2xl border border-slate-700/80 p-4 card-hover">
+            <div class="flex items-center justify-between mb-3">
+              <span class="pill px-2 py-0.5 text-[10px] bg-sky-500/10 text-sky-300 border border-sky-400/40">Step 2</span>
+              <span class="text-[11px] text-slate-400">Detect & decide</span>
+            </div>
+            <h3 class="text-sm font-semibold mb-2 text-slate-50">AI detects content gaps</h3>
+            <p class="text-xs text-slate-300 mb-3">
+              The decision engine monitors your cadence. When a gap appears that could hurt reach or revenue, FlowPulse decides what to post, where, and when.
+            </p>
+            <ul class="space-y-1 text-xs text-slate-300">
+              <li>• Predicts “silent” hours before they happen</li>
+              <li>• Chooses topic clusters that keep series alive</li>
+              <li>• Respects your brand rules & no‑go topics</li>
+            </ul>
+          </div>
+
+          <div class="glass rounded-2xl border border-slate-700/80 p-4 card-hover">
+            <div class="flex items-center justify-between mb-3">
+              <span class="pill px-2 py-0.5 text-[10px] bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-400/40">Step 3</span>
+              <span class="text-[11px] text-slate-400">Create & post</span>
+            </div>
+            <h3 class="text-sm font-semibold mb-2 text-slate-50">Auto‑generate image + caption</h3>
+            <p class="text-xs text-slate-300 mb-3">
+              FlowPulse designs an on‑brand visual, writes a caption, adapts it per platform, then posts or schedules – fully automated or with your approval.
+            </p>
+            <ul class="space-y-1 text-xs text-slate-300">
+              <li>• Image generation tuned to your palette</li>
+              <li>• Platform‑specific hooks, CTAs & hashtags</li>
+              <li>• Safety layer for brand & compliance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="mt-16 sm:mt-24">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div>
+            <p class="text-xs font-semibold tracking-[0.2em] uppercase text-sky-300 mb-1.5">Features</p>
+            <h2 class="text-xl sm:text-2xl font-semibold text-slate-50">Your AI content ops team, in one dashboard.</h2>
+          </div>
+          <div class="flex flex-wrap gap-2 text-[11px] text-slate-300">
+            <span class="pill px-2 py-0.5 bg-slate-900/80 border border-slate-700/80">Influencers</span>
+            <span class="pill px-2 py-0.5 bg-slate-900/80 border border-slate-700/80">Brands</span>
+            <span class="pill px-2 py-0.5 bg-slate-900/80 border border-slate-700/80">Agencies</span>
+            <span class="pill px-2 py-0.5 bg-slate-900/80 border border-slate-700/80">CMOs</span>
+          </div>
+        </div>
+
+        <div class="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.95fr)] gap-6 items-start">
+          <!-- Feature grid -->
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="glass rounded-2xl border border-slate-700/80 p-4 card-hover">
+              <div class="flex items-center justify-between mb-2">
+                <span class="pill px-2 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-400/40">Decision engine</span>
+              </div>
+              <h3 class="text-sm font-semibold mb-1 text-slate-50">Autonomous posting logic</h3>
+              <p class="text-xs text-slate-300">
+                Configure guardrails once. FlowPulse decides what to post, how often, which channels, and when to hold content for key launches.
+              </p>
+            </div>
+
+            <div class="glass rounded-2xl border border-slate-700/80 p-4 card-hover">
+              <div class="flex items-center justify-between mb-2">
+                <span class="pill px-2 py-0.5 text-[10px] bg-sky-500/10 text-sky-300 border border-sky-400/40">Smart visuals</span>
+              </div>
+              <h3 class="text-sm font-semibold mb-1 text-slate-50">AI‑generated on‑brand images</h3>
+              <p class="text-xs text-slate-300">
+                From product mockups to creator carousels, images are built with your fonts, colors, and templates baked in.
+              </p>
+            </div>
+
+            <div class="glass rounded-2xl border border-slate-700/80 p-4 card-hover">
+              <div class="flex items-center justify-between mb-2">
+                <span class="pill px-2 py-0.5 text-[10px] bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-400/40">Tone engine</span>
+              </div>
+              <h3 class="text-sm font-semibold mb-1 text-slate-50">Caption & hook intelligence</h3>
+              <p class="text-xs text-slate-300">
+                Captions tuned per platform with hooks, CTAs, and hashtag strategies that mirror your past best performers.
+              </p>
+            </div>
+
+            <div class="glass rounded-2xl border border-slate-700/80 p-4 card-hover">
+              <div class="flex items-center justify-between mb-2">
+                <span class="pill px-2 py-0.5 text-[10px] bg-amber-500/10 text-amber-300 border border-amber-400/40">Control</span>
+              </div>
+              <h3 class="text-sm font-semibold mb-1 text-slate-50">Hands‑off or hands‑on</h3>
+              <p class="text-xs text-slate-300">
+                Choose fully automated posting or approval flows. Override any decision with one click, without breaking the system.
+              </p>
+            </div>
+          </div>
+
+          <!-- Timeline / feed preview -->
+          <div class="glass rounded-2xl border border-slate-700/80 p-4 shadow-soft">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-xs text-slate-400">Autopilot feed</p>
+                <p class="text-sm font-semibold text-slate-50">Today’s automated decisions</p>
+              </div>
+              <button class="pill px-2 py-1 text-[10px] bg-slate-900/80 border border-slate-700/80 text-slate-200 hover:bg-slate-900 transition">
+                Pause autopilot
+              </button>
+            </div>
+            <div class="relative flex gap-3">
+              <div class="w-0.5 rounded-full timeline-line"></div>
+              <div class="flex-1 space-y-4 text-xs">
+                <div>
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-slate-300">9:05 AM • TikTok & IG Reels</span>
+                    <span class="pill px-2 py-0.5 bg-emerald-500/10 text-emerald-300 border border-emerald-400/40 text-[10px]">Posted</span>
+                  </div>
+                  <p class="text-slate-100 font-medium">“Behind‑the‑scenes: how we plan a launch in 48 hours”</p>
+                  <p class="text-slate-400 mt-0.5">Decision: Engagement spike in stories → turn into micro‑vlog.</p>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-slate-300">12:30 PM • LinkedIn</span>
+                    <span class="pill px-2 py-0.5 bg-sky-500/10 text-sky-300 border border-sky-400/40 text-[10px]">Scheduled</span>
+                  </div>
+                  <p class="text-slate-100 font-medium">“Why consistent posting beats viral one‑offs for brand deals”</p>
+                  <p class="text-slate-400 mt-0.5">Decision: Fill thought‑leadership gap in weekdays stream.</p>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-slate-300">7:45 PM • IG, X, Threads</span>
+                    <span class="pill px-2 py-0.5 bg-amber-500/10 text-amber-300 border border-amber-400/40 text-[10px]">In review</span>
+                  </div>
+                  <p class="text-slate-100 font-medium">Carousel: “3 mistakes killing your engagement on slow weeks”</p>
+                  <p class="text-slate-400 mt-0.5">Decision: Weekend content gap + sponsor requirement → approval needed.</p>
+                </div>
+                <div class="pt-1 border-t border-slate-800/80 mt-2 flex items-center justify-between text-[11px] text-slate-400">
+                  <span>Last 30 days: +41% engagement, +29% posting consistency.</span>
+                  <button class="underline decoration-dotted underline-offset-2 hover:text-slate-200">View impact report →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="mt-16 sm:mt-24">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div>
+            <p class="text-xs font-semibold tracking-[0.2em] uppercase text-emerald-300 mb-1.5">Pricing</p>
+            <h2 class="text-xl sm:text-2xl font-semibold text-slate-50">Simple plans that scale with your audience.</h2>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-slate-300">
+            <span>Billing</span>
+            <div class="pill bg-slate-900/80 border border-slate-700/80 px-1.5 py-0.5 flex items-center gap-1 text-[10px]">
+              <button class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-100">Monthly</button>
+              <button class="px-2 py-0.5 rounded-full text-slate-400 border border-transparent hover:border-slate-600">Yearly <span class="text-emerald-300">‑20%</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-6 items-start">
+          <div class="glass rounded-2xl border border-slate-700/80 p-4 md:p-5">
+            <h3 class="text-sm font-semibold mb-2 text-slate-50">Starter • Creators</h3>
+            <p class="text-xs text-slate-300 mb-3">Everything you need to keep your audience warm when life gets busy.</p>
+            <div class="flex items-baseline gap-1 mb-3">
+              <span class="text-2xl font-semibold text-slate-50">$39</span>
+              <span class="text-xs text-slate-400">/month</span>
+            </div>
+            <ul class="space-y-1.5 text-xs text-slate-300 mb-4">
+              <li>• Up to 4 linked social accounts</li>
+              <li>• 60 AI‑generated posts / month</li>
+              <li>• Core decision engine & topic detection</li>
+              <li>• Auto‑image & caption generation</li>
+              <li>• Basic analytics & A/B testing</li>
+            </ul>
+            <button class="w-full btn-gradient rounded-full text-sm font-semibold text-slate-900 py-2">
+              Start free trial
+            </button>
+          </div>
+
+          <div class="gradient-border shadow-soft">
+            <div class="gradient-border-inner p-4 md:p-5">
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <h3 class="text-sm font-semibold text-slate-50">Scale • Teams & Brands</h3>
+                  <p class="text-xs text-slate-300">For companies, agencies, and multi‑brand creators.</p>
+                </div>
+                <span class="pill px-2 py-0.5 bg-emerald-500/10 text-emerald-300 border border-emerald-400/40 text-[10px] font-medium">Most popular</span>
+              </div>
+              <div class="flex items-baseline gap-1 mb-3">
+                <span class="text-2xl font-semibold text-slate-50">$129</span>
+                <span class="text-xs text-slate-400">/month</span>
+              </div>
+              <div class="grid sm:grid-cols-2 gap-3 text-xs text-slate-300 mb-4">
+                <ul class="space-y-1.5">
+                  <li>• Unlimited social accounts</li>
+                  <li>• Unlimited AI‑generated posts</li>
+                  <li>• Advanced decision engine & rules</li>
+                  <li>• Brand safety & approval workflows</li>
+                </ul>
+                <ul class="space-y-1.5">
+                  <li>• Team access & roles</li>
+                  <li>• Post‑level attribution & ROI</li>
+                  <li>• Priority support & onboarding</li>
+                  <li>• API & webhooks</li>
+                </ul>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <button class="flex-1 btn-gradient rounded-full text-sm font-semibold text-slate-900 py-2">
+                  Talk to sales
+                </button>
+                <button class="flex-1 rounded-full border border-slate-700/80 text-sm font-semibold text-slate-100 py-2 hover:bg-slate-900 transition">
+                  Compare all plans
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Demo / onboarding -->
+    <section id="demo" class="mt-16 sm:mt-24">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-6 items-start">
+          <!-- Form -->
+          <div class="glass rounded-2xl border border-slate-700/80 p-4 sm:p-5 shadow-soft">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-xs font-semibold tracking-[0.2em] uppercase text-emerald-300 mb-1">Get a custom autopilot</p>
+                <h2 class="text-sm sm:text-base font-semibold text-slate-50">Describe your brand. We’ll simulate your first 7 days.</h2>
+              </div>
+              <span class="hidden sm:inline-flex pill px-2 py-0.5 text-[10px] bg-slate-900/80 border border-slate-700/80 text-slate-300">
+                ~60 seconds
+              </span>
+            </div>
+
+            <form id="autopilot-form" class="space-y-3 text-xs">
+              <div>
+                <label class="block text-slate-300 mb-1">What are you?</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button type="button" data-role="creator" class="role-btn pill px-3 py-2 bg-slate-900/80 border border-slate-700/80 text-left hover:border-sky-500/70">
+                    <p class="font-medium text-slate-100">Influencer / Creator</p>
+                    <p class="text-[11px] text-slate-400">Personal brand, UGC, or solo creator.</p>
+                  </button>
+                  <button type="button" data-role="brand" class="role-btn pill px-3 py-2 bg-slate-900/80 border border-slate-700/80 text-left hover:border-sky-500/70">
+                    <p class="font-medium text-slate-100">Company / Brand</p>
+                    <p class="text-[11px] text-slate-400">Product, SaaS, agency or enterprise.</p>
+                  </button>
+                </div>
+              </div>
+
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-slate-300 mb-1">Primary niche / topic</label>
+                  <input type="text" id="niche" placeholder="e.g. fitness coaching, B2B SaaS, beauty" class="input-base w-full rounded-lg px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500" />
+                </div>
+                <div>
+                  <label class="block text-slate-300 mb-1">Main platforms</label>
+                  <div class="flex flex-wrap gap-1.5 text-[11px]">
+                    <button type="button" class="platform-btn pill px-2 py-1 bg-slate-900/80 border border-slate-700/80">Instagram</button>
+                    <button type="button" class="platform-btn pill px-2 py-1 bg-slate-900/80 border border-slate-700/80">TikTok</button>
+                    <button type="button" class="platform-btn pill px-2 py-1 bg-slate-900/80 border border-slate-700/80">X</button>
+                    <button type="button" class="platform-btn pill px-2 py-1 bg-slate-900/80 border border-slate-700/80">YouTube</button>
+                    <button type="button" class="platform-btn pill px-2 py-1 bg-slate-900/80 border border-slate-700/80">LinkedIn</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-3">
+                <div>
+                  <label class="block text-slate-300 mb-1">How often do you want to post?</label>
+                  <select id="frequency" class="input-base w-full rounded-lg px-3 py-2 text-xs bg-slate-900/90 text-slate-100">
+                    <option value="1-2/day">1–2 / day</option>
+                    <option value="3-5/day">3–5 / day</option>
+                    <option value="daily">Daily</option>
+                    <option value="3/week">3× / week</option>
+                    <option value="custom">Custom cadence</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-slate-300 mb-1">Anything we should always or never talk about?</label>
+                  <input id="rules" type="text" placeholder="e.g. always mention sponsors, avoid politics, family, etc." class="input-base w-full rounded-lg px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500" />
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div id="auto-toggle" class="w-9 h-5 pill bg-emerald-500/30 toggle flex items-center px-0.5 cursor-pointer">
+                    <div class="w-4 h-4 rounded-full bg-slate-900 toggle-knob translate-x-4"></div>
+                  </div>
+                  <div class="text-[11px] text-slate-300">
+                    <p class="font-medium">Enable full automation</p>
+                    <p class="text-slate-500">Let FlowPulse publish without approvals.</p>
+                  </div>
+                </div>
+                <button type="submit" class="btn-gradient rounded-full text-xs font-semibold text-slate-900 px-4 py-2">
+                  Generate 7‑day plan
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Output / simulated schedule -->
+          <div class="glass rounded-2xl border border-slate-700/80 p-4 sm:p-5 shadow-soft">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-xs text-slate-400">Simulation</p>
+                <p class="text-sm font-semibold text-slate-50">Your next 7 days on autopilot</p>
+              </div>
+              <span id="sim-mode" class="pill px-2 py-0.5 bg-emerald-500/10 text-emerald-300 border border-emerald-400/40 text-[10px]">
+                Waiting for inputs
+              </span>
+            </div>
+
+            <div id="plan-output" class="space-y-3 text-xs text-slate-300 max-h-72 overflow-y-auto scrollbar-thin pr-1">
+              <p class="text-slate-400">
+                Fill out the form and we’ll generate a draft plan showing how FlowPulse would keep your channels active: topics, images, captions, and timing decisions.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-16 border-t border-slate-800/80 pt-6 pb-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-[11px] text-slate-500 flex flex-col sm:flex-row justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-slate-200">FlowPulse</span>
+        <span class="text-slate-500">• Autonomous social presence for influencers & brands.</span>
+      </div>
+      <div class="flex gap-4">
+        <a href="#" class="hover:text-slate-200">Security</a>
+        <a href="#" class="hover:text-slate-200">Privacy</a>
+        <a href="#" class="hover:text-slate-200">Terms</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Hero live simulation cycling
+    const steps = [
+      {
+        step: 'Detecting content gap…',
+        topic: 'Gap found on TikTok & Instagram for your “Build in public” series.',
+        caption: 'FlowPulse suggests a quick progress update with a carousel behind‑the‑scenes visual.',
+        eta: 'Posting in 13 minutes at your evening peak window.',
+        status: 'Engaged',
+        decision: 'Post',
+      },
+      {
+        step: 'Evaluating audience mood…',
+        topic: 'Followers have engaged most with “mistakes to avoid” content this week.',
+        caption: 'Drafting an image quote + caption: “3 mistakes we made scaling to 6‑figures.”',
+        eta: 'Scheduled for 8:45 PM across IG, X, and LinkedIn.',
+        status: 'Optimizing',
+        decision: 'Post',
+      },
+      {
+        step: 'Holding back content…',
+        topic: 'Detected sponsor campaign starting tomorrow.',
+        caption: 'FlowPulse shifts evergreen content to avoid competing with paid posts.',
+        eta: 'Next post queued for 10:15 AM tomorrow.',
+        status: 'Guarded',
+        decision: 'Wait',
+      },
+    ];
+
+    let idx = 0;
+    function cycleSimulation() {
+      const s = steps[idx];
+      document.getElementById('sim-step').textContent = s.step;
+      document.getElementById('sim-topic').textContent = s.topic;
+      document.getElementById('sim-caption').textContent = s.caption;
+      document.getElementById('sim-eta').textContent = s.eta;
+      document.getElementById('sim-status').innerHTML =
+        '<span class="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse"></span>' +
+        '<span>' + s.status + '</span>';
+      idx = (idx + 1) % steps.length;
+    }
+    setInterval(cycleSimulation, 5500);
+
+    // Role buttons
+    const roleButtons = document.querySelectorAll('.role-btn');
+    let selectedRole = '';
+    roleButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        roleButtons.forEach(b => b.classList.remove('border-sky-500', 'bg-slate-900'));
+        btn.classList.add('border-sky-500', 'bg-slate-900');
+        selectedRole = btn.dataset.role;
+      });
+    });
+
+    // Platform buttons
+    const platformButtons = document.querySelectorAll('.platform-btn');
+    platformButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('border-sky-400');
+        btn.classList.toggle('bg-slate-900');
+      });
+    });
+
+    // Automation toggle
+    const autoToggle = document.getElementById('auto-toggle');
+    let autoEnabled = true;
+    autoToggle.addEventListener('click', () => {
+      autoEnabled = !autoEnabled;
+      const knob = autoToggle.querySelector('.toggle-knob');
+      if (autoEnabled) {
+        autoToggle.classList.remove('bg-slate-700');
+        autoToggle.classList.add('bg-emerald-500/30');
+        knob.style.transform = 'translateX(1rem)';
+      } else {
+        autoToggle.classList.remove('bg-emerald-500/30');
+        autoToggle.classList.add('bg-slate-700');
+        knob.style.transform = 'translateX(0)';
+      }
+    });
+
+    // CTA scroll
+    document.getElementById('cta-start').addEventListener('click', () => {
+      document.getElementById('demo').scrollIntoView({ behavior: 'smooth' });
+    });
+    document.getElementById('cta-demo').addEventListener('click', () => {
+      document.getElementById('how-it-works').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Generate simple 7-day plan
+    document.getElementById('autopilot-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const niche = document.getElementById('niche').value.trim() || 'your brand';
+      const frequency = document.getElementById('frequency').value;
+      const rules = document.getElementById('rules').value.trim();
+      const platforms = Array.from(platformButtons)
+        .filter(b => b.classList.contains('border-sky-400'))
+        .map(b => b.textContent.trim());
+      const modeBadge = document.getElementById('sim-mode');
+      modeBadge.textContent = autoEnabled ? 'Full automation enabled' : 'Approval mode enabled';
+      modeBadge.className =
+        'pill px-2 py-0.5 text-[10px] ' +
+        (autoEnabled
+          ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-400/40'
+          : 'bg-amber-500/10 text-amber-300 border border-amber-400/40');
+
+      const planContainer = document.getElementById('plan-output');
+      planContainer.innerHTML = '';
+
+      const days = ['Day 1 • Today', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'];
+
+      const topics = [
+        `Kickoff post: why ${niche} matters to your audience right now.`,
+        `Story / reel: a behind‑the‑scenes look at your ${niche} process.`,
+        `Educational post: “3 mistakes to avoid in ${niche}”.`,
+        `Social proof: client / community win tied to ${niche}.`,
+        `Framework or checklist related to ${niche}.`,
+        `Personal angle: what you’ve learned doing ${niche}.`,
+        `Soft CTA: how to work with you or try your product in ${niche}.`,
+      ];
+
+      const hooks = [
+        '“If you’re just starting, read this before you waste 6 months…”',
+        '“This took me 3 years to figure out, you can steal it in 30 seconds.”',
+        '“Most people get this wrong – here’s what I wish I knew earlier.”',
+        '“Bookmark this so you don’t forget on your next content block.”',
+      ];
+
+      const imageTypes = [
+        'image: bold quote card in your brand colors',
+        'image: over‑the‑shoulder workspace shot mockup',
+        'image: simple 3‑slide carousel with key bullets',
+        'image: before/after layout visualizing transformation',
+        'image: feed‑native meme format that fits your tone',
+      ];
+
+      days.forEach((day, i) => {
+        const topic = topics[i % topics.length];
+        const hook = hooks[i % hooks.length];
+        const img = imageTypes[i % imageTypes.length];
+        const pl = platforms.length ? platforms.join(', ') : 'Instagram, TikTok, X';
+        const cadence =
+          frequency === '3/week'
+            ? i % 2 === 0 ? '1 post' : 'No additional posts – protecting focus.' 
+            : frequency === 'daily'
+              ? '1 post'
+              : frequency === '3-5/day'
+                ? '3–4 posts spread across peaks.'
+                : frequency === '1-2/day'
+                  ? '1–2 posts depending on live signals.'
+                  : 'Adaptive cadence based on live engagement.';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'border border-slate-800/80 rounded-xl p-3 bg-slate-950/60 card-hover';
+
+        const body = `
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-slate-200 font-medium">${day}</span>
+            <span class="pill px-2 py-0.5 bg-slate-900/80 border border-slate-700/80 text-[10px] text-slate-300">
+              ${cadence}
+            </span>
+          </div>
+          <p class="text-slate-300 mb-1">${topic}</p>
+          <p class="text-slate-400 mb-1">Visual: ${img}.</p>
+          <p class="text-slate-400 mb-1">Caption hook: ${hook}</p>
+          <p class="text-slate-400 mb-1">Channels: ${pl}.</p>
+          <p class="text-slate-500 text-[11px]">
+            Decision logic: Detects gaps vs your target cadence, aligns with best‑time windows, and ${
+              autoEnabled
+                ? 'publishes automatically with safety filters.'
+                : 'queues posts for your quick approval before publishing.'
+            } ${rules ? 'Brand rules applied: ' + rules : ''}
+          </p>
+        `;
+        wrapper.innerHTML = body;
+        planContainer.appendChild(wrapper);
+      });
+    });
+  </script>
+</body>
+</html>

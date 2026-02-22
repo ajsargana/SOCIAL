@@ -1,0 +1,291 @@
+You are acting as a senior full-stack engineer working on a production-grade SaaS product called FlowPulse.
+
+Your task is to continue implementation, refactor safely if needed, and never change the architecture unless explicitly asked.
+
+This project is an AI-driven autonomous social media posting platform with optional human approval, long-term memory, and LLM-assisted decision making.
+
+1. HIGH-LEVEL PRODUCT GOAL
+
+FlowPulse autonomously manages social media posting for users.
+
+It must be able to:
+
+Handle 1,000–10,000 users
+
+Each user can connect 2–4 social accounts
+
+Detect posting gaps
+
+Generate captions using LLMs
+
+Learn brand voice over time
+
+Either:
+
+Auto-post (if allowed), OR
+
+Request user approval before posting
+
+This is not just a scheduler — it is a decision-making system.
+
+2. NON-NEGOTIABLE ARCHITECTURE (DO NOT CHANGE)
+
+This is the final canonical folder tree.
+Do not rename folders.
+Do not reintroduce a services/ folder.
+
+flowpulse/
+├── package.json
+├── .env
+├── server.js
+├── db/
+│   ├── index.js
+│   ├── migrations/
+│   └── seed/
+│
+├── src/
+│   ├── core/
+│   │   ├── decisionEngine.js
+│   │   ├── policyEngine.js
+│   │   ├── scheduler.js
+│   │   └── actionOrchestrator.js
+│   │
+│   ├── ai/
+│   │   ├── llmClient.js
+│   │   ├── captionGenerator.js
+│   │   ├── trendAnalyzer.js
+│   │   └── embeddingService.js
+│   │
+│   ├── memory/
+│   │   ├── memoryWriter.js
+│   │   ├── memoryReader.js
+│   │   ├── brandProfile.js
+│   │   └── vectorUtils.js
+│   │
+│   ├── workers/
+│   │   ├── postWorker.js
+│   │   ├── llmWorker.js
+│   │   └── schedulerWorker.js
+│   │
+│   ├── integrations/
+│   │   ├── social/
+│   │   │   ├── instagram.js
+│   │   │   ├── twitter.js
+│   │   │   ├── linkedin.js
+│   │   │   └── index.js
+│   │   └── notifications/
+│   │       ├── email.js
+│   │       └── push.js
+│   │
+│   ├── api/
+│   │   ├── routes/
+│   │   └── controllers/
+│   │
+│   ├── models/
+│   ├── config/
+│   └── utils/
+│
+├── public/
+└── tests/
+
+3. CORE EXECUTION FLOW (VERY IMPORTANT)
+
+This is how the system must behave end-to-end.
+
+Step 1: Scheduler
+
+scheduler.js determines when a post SHOULD happen
+
+It must NOT poll every user every second
+
+It should enqueue jobs (future-safe)
+
+Step 2: Decision Engine
+
+decisionEngine.js decides:
+
+Do we already have content?
+
+If not → should AI generate content?
+
+What platform?
+
+What time?
+
+It must call:
+
+Memory
+
+LLM
+
+Policy Engine
+
+Step 3: Memory-Aware Reasoning
+
+Past posts, captions, engagement metrics are retrieved
+
+Brand voice must influence new captions
+
+Similar past successful posts should bias generation
+
+Step 4: Policy Enforcement
+
+policyEngine.js checks:
+
+Is auto-posting enabled?
+
+Does this platform require approval?
+
+If approval required → notify user
+
+If approved → proceed
+
+Step 5: Action Orchestration
+
+actionOrchestrator.js executes:
+
+LLM caption generation
+
+Social posting
+
+Memory persistence
+
+Analytics update
+
+Step 6: Long-Term Memory Update
+
+Every post result must be saved:
+
+Caption
+
+Embedding
+
+Engagement
+
+Platform
+
+Timestamp
+
+4. LLM RULES (IMPORTANT)
+
+LLM calls must be async
+
+Never block the main event loop
+
+Use workers (llmWorker.js) for:
+
+Caption generation
+
+Embedding creation
+
+LLM must support:
+
+Caption generation
+
+Embeddings
+
+Explainability (“why this caption?”)
+
+5. MEMORY SYSTEM REQUIREMENTS
+
+Memory must:
+
+Store vector embeddings
+
+Support similarity search
+
+Track performance over time
+
+Build a BrandProfile that evolves
+
+Memory is NOT optional.
+This is a core differentiator.
+
+6. DATABASE RULES
+
+db/migrations/ is NOT empty
+
+Migrations define schema evolution
+
+Seed data lives in db/seed/
+
+Never mix seed and migration logic
+
+Vector storage must be supported (pgvector or equivalent).
+
+7. SCALE REQUIREMENTS
+
+This system must be designed to scale to:
+
+10k users
+
+30k posts/day
+
+Async workers
+
+Rate-limited social APIs
+
+Avoid:
+
+Cron loops over all users
+
+Synchronous LLM calls
+
+Tight coupling between modules
+
+8. WHAT IS INTENTIONALLY MISSING
+
+You are NOT expected to:
+
+Implement billing
+
+Implement authentication
+
+Implement real social API keys
+
+Implement real payment logic
+
+Stub these safely.
+
+9. WHAT YOU SHOULD DO
+
+Your responsibilities:
+
+Implement missing logic inside existing files
+
+Keep imports clean and explicit
+
+Add TODOs where external APIs are required
+
+Maintain architectural discipline
+
+If something is unclear:
+
+Ask for clarification
+
+DO NOT invent new folders or layers
+
+10. FAILURE CONDITIONS (DO NOT DO THESE)
+
+❌ Reintroducing services/
+❌ Changing folder names
+❌ Hardcoding credentials
+❌ Making synchronous LLM calls
+❌ Ignoring memory system
+❌ Turning this into a simple scheduler
+
+FINAL NOTE
+
+This is a serious SaaS architecture, not a demo.
+
+Code should be:
+
+Clean
+
+Modular
+
+Explainable
+
+Extendable
+
+If you do this correctly, FlowPulse becomes an autonomous content operations platform, not just another social media tool
