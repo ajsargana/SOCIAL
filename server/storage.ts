@@ -76,6 +76,26 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await db.update(users).set(updates).where(eq(users.id, id)).returning();
+    return user || undefined;
+  }
+
+  async incrementPostUsage(id: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ postsUsedThisMonth: db.$count(users, eq(users.id, id)) })
+      .where(eq(users.id, id));
+    // Simple increment via raw SQL via drizzle
+    const user = await this.getUser(id);
+    if (user) {
+      await db
+        .update(users)
+        .set({ postsUsedThisMonth: (user.postsUsedThisMonth || 0) + 1 })
+        .where(eq(users.id, id));
+    }
+  }
+
   async getSocialAccountsByUserId(userId: string): Promise<SocialAccount[]> {
     return db.select().from(socialAccounts).where(eq(socialAccounts.userId, userId));
   }
