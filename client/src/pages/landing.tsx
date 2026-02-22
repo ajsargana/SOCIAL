@@ -16,6 +16,7 @@ export default function LandingPage() {
   const { toast } = useToast();
   const [simIndex, setSimIndex] = useState(0);
   const [email, setEmail] = useState("");
+  const [, navigate] = useLocation();
 
   useEffect(() => {
     const interval = setInterval(() => {
