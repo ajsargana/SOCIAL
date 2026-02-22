@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 const simulationSteps = [
   { step: "Detecting content gap...", topic: "Scanning your content calendar...", caption: "FlowPulse analyzes your posting history, audience behavior, and topics to decide what to publish next.", decision: "Wait", eta: "Calculating best send time..." },
