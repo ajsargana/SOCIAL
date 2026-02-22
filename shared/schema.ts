@@ -8,6 +8,11 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
+  plan: text("plan").notNull().default("starter"), // starter | pro | enterprise
+  postsUsedThisMonth: integer("posts_used_this_month").notNull().default(0),
+  usageResetAt: timestamp("usage_reset_at").defaultNow(),
+  onboardingCompleted: boolean("onboarding_completed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const socialAccounts = pgTable("social_accounts", {
@@ -31,6 +36,7 @@ export const posts = pgTable("posts", {
   scheduledAt: timestamp("scheduled_at"),
   postedAt: timestamp("posted_at"),
   engagement: jsonb("engagement"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const autopilotSettings = pgTable("autopilot_settings", {
@@ -61,6 +67,29 @@ export const waitlistEntries = pgTable("waitlist_entries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// ─── Plan limits ─────────────────────────────────────────────────────────────
+export const PLAN_LIMITS = {
+  starter: {
+    maxSocialAccounts: 2,
+    maxPostsPerMonth: 5,
+    autoApprove: false,
+    brandVoiceLearning: false,
+  },
+  pro: {
+    maxSocialAccounts: Infinity,
+    maxPostsPerMonth: Infinity,
+    autoApprove: true,
+    brandVoiceLearning: true,
+  },
+  enterprise: {
+    maxSocialAccounts: Infinity,
+    maxPostsPerMonth: Infinity,
+    autoApprove: true,
+    brandVoiceLearning: true,
+  },
+} as const;
+
+// ─── Zod schemas ─────────────────────────────────────────────────────────────
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -102,6 +131,18 @@ export const insertWaitlistSchema = createInsertSchema(waitlistEntries).pick({
   email: true,
 });
 
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+export const registerSchema = z.object({
+  username: z.string().min(2).max(32),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
@@ -119,3 +160,5 @@ export type Decision = typeof decisions.$inferSelect;
 
 export type InsertWaitlistEntry = z.infer<typeof insertWaitlistSchema>;
 export type WaitlistEntry = typeof waitlistEntries.$inferSelect;
+
+export type Plan = "starter" | "pro" | "enterprise";
