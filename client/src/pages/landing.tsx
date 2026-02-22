@@ -82,15 +82,15 @@ export default function LandingPage() {
               <a href="#pricing" className="text-slate-300 hover:text-white transition" data-testid="link-pricing">Pricing</a>
               <a href="#demo" className="text-slate-300 hover:text-white transition" data-testid="link-demo">Live demo</a>
             </nav>
-            <div className="flex items-center gap-3">
-              <button className="hidden sm:inline-flex px-3.5 py-1.5 rounded-full border border-slate-600/80 text-xs font-medium text-slate-200 hover:bg-slate-800/80 hover-elevate active-elevate-2 transition" data-testid="button-login">
-                Log in
-              </button>
-              <a href="#demo" className="btn-gradient text-xs sm:text-sm font-semibold text-slate-900 rounded-full px-4 py-2 shadow-lg flex items-center gap-1.5 hover-elevate active-elevate-2 transition-all" data-testid="link-start-free">
-                <span>Start free</span>
-                <span className="text-xs bg-black/10 rounded-full px-1.5 py-0.5">60s setup</span>
-              </a>
-            </div>
+              <div className="flex items-center gap-3">
+                <button onClick={() => navigate("/login")} className="hidden sm:inline-flex px-3.5 py-1.5 rounded-full border border-slate-600/80 text-xs font-medium text-slate-200 hover:bg-slate-800/80 hover-elevate active-elevate-2 transition" data-testid="button-login">
+                  Log in
+                </button>
+                <button onClick={() => navigate("/login")} className="btn-gradient text-xs sm:text-sm font-semibold text-slate-900 rounded-full px-4 py-2 shadow-lg flex items-center gap-1.5 hover-elevate active-elevate-2 transition-all" data-testid="link-start-free">
+                  <span>Start free</span>
+                  <span className="text-xs bg-black/10 rounded-full px-1.5 py-0.5">60s setup</span>
+                </button>
+              </div>
           </div>
         </div>
       </header>
