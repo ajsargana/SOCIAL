@@ -60,7 +60,7 @@ class DecisionEngine {
 
     const brandProfile = await memoryReader.getBrandProfile(userId);
     const suggestedPlatform = this.selectPlatform(socialAccounts, recentPosts);
-    const suggestedTopic = await this.suggestTopicWithLLM(context, brandProfile, suggestedPlatform);
+    const suggestedTopic = await this.suggestTopicWithLLM(context, brandProfile as Record<string, unknown> | null, suggestedPlatform);
     const optimalTime = this.calculateOptimalPostTime(context);
 
     const reasoning = `${gapHours}h gap on ${suggestedPlatform}. Topic: "${suggestedTopic}". Scheduled for ${optimalTime.toLocaleTimeString()}.`;

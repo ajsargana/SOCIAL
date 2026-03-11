@@ -6,10 +6,82 @@ import { insertWaitlistSchema, PLAN_LIMITS } from "@shared/schema";
 import { decisionEngine } from "./src/core/decisionEngine";
 import { actionOrchestrator } from "./src/core/actionOrchestrator";
 import { scheduler } from "./src/core/scheduler";
+import bcrypt from "bcryptjs";
 
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
   // Start the background scheduler
   scheduler.start(60_000);
+
+  // ─── Profile & account management ────────────────────────────────────────
+  app.patch("/api/profile", requireAuth, async (req, res) => {
+    try {
+      const { username, email } = req.body;
+      const updates: Record<string, string> = {};
+      if (username) updates.username = username;
+      if (email) updates.email = email;
+      const user = await storage.updateUser(req.session.userId!, updates);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const { password: _, ...safeUser } = user;
+      return res.json(safeUser);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      if (msg.includes("unique")) return res.status(409).json({ error: "Username or email already taken" });
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/profile/change-password", requireAuth, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword || newPassword.length < 6) {
+        return res.status(400).json({ error: "Invalid password data" });
+      }
+      const user = await storage.getUser(req.session.userId!);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const valid = await bcrypt.compare(currentPassword, user.password);
+      if (!valid) return res.status(401).json({ error: "Current password is incorrect" });
+      const hashed = await bcrypt.hash(newPassword, 10);
+      await storage.updateUser(user.id, { password: hashed });
+      return res.json({ ok: true });
+    } catch {
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Generate a caption preview without creating a post
+  app.post("/api/caption/generate", requireAuth, async (req, res) => {
+    try {
+      const { platform, topic, brandVoice } = req.body;
+      const { captionGenerator } = await import("./src/ai/captionGenerator");
+      const caption = await captionGenerator.generate({ platform: platform || "instagram", topic: topic || "brand update", brandVoice: brandVoice || "professional" });
+      return res.json({ caption });
+    } catch {
+      return res.status(500).json({ error: "Caption generation failed" });
+    }
+  });
+
+  // ─── Admin (simple key-based guard) ──────────────────────────────────────
+  const ADMIN_KEY = process.env.ADMIN_KEY || "flowpulse-admin";
+  app.get("/api/admin/stats", async (req, res) => {
+    if (req.headers["x-admin-key"] !== ADMIN_KEY) return res.status(403).json({ error: "Forbidden" });
+    try {
+      const waitlist = await storage.getAllWaitlistEntries();
+      const { db } = await import("./db");
+      const { users, posts } = await import("@shared/schema");
+      const allUsers = await db.select({ id: users.id, email: users.email, username: users.username, plan: users.plan, createdAt: users.createdAt, postsUsedThisMonth: users.postsUsedThisMonth }).from(users);
+      const allPosts = await db.select({ id: posts.id, status: posts.status, platform: posts.platform }).from(posts);
+      return res.json({
+        totalUsers: allUsers.length,
+        waitlistCount: waitlist.length,
+        totalPosts: allPosts.length,
+        planBreakdown: allUsers.reduce((acc: Record<string,number>, u) => { acc[u.plan] = (acc[u.plan]||0)+1; return acc; }, {}),
+        recentUsers: allUsers.slice(-10).reverse(),
+        recentWaitlist: waitlist.slice(-10).reverse(),
+      });
+    } catch {
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
 
   // ─── Waitlist (public) ─────────────────────────────────────────────────────
   app.post("/api/waitlist", async (req, res) => {

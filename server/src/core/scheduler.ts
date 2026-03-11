@@ -22,6 +22,7 @@ class Scheduler {
 
     this.intervalId = setInterval(() => {
       this.processJobs();
+      this.processJobs_extra();
     }, intervalMs);
 
     console.log(`[Scheduler] Started with interval ${intervalMs}ms`);
@@ -118,8 +119,28 @@ class Scheduler {
   }
 
   private async processAnalyzeJob(_job: ScheduledJob): Promise<void> {
-    // TODO: Implement engagement analysis
     console.log("[Scheduler] Analyze job - not yet implemented");
+  }
+
+  // Reset monthly post usage for users whose reset date has passed
+  private async resetMonthlyUsage(): Promise<void> {
+    try {
+      const { db } = await import("../../db");
+      const { users } = await import("@shared/schema");
+      const { lte } = await import("drizzle-orm");
+      const now = new Date();
+      const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      await db
+        .update(users)
+        .set({ postsUsedThisMonth: 0, usageResetAt: nextReset })
+        .where(lte(users.usageResetAt, now));
+    } catch (err) {
+      console.error("[Scheduler] Monthly reset error:", err);
+    }
+  }
+
+  private async processJobs_extra(): Promise<void> {
+    await this.resetMonthlyUsage();
   }
 
   private cleanupCompletedJobs(): void {
